@@ -1,0 +1,12 @@
+.up-star .fa.fa-star {
+    color: orange;
+}
+.up-star .fa.fa-star.upnostar {
+    color: #c7c7c7;
+}
+.up_popupform{
+    display: none;
+}
+.openForm {
+    display: block !important;
+}
