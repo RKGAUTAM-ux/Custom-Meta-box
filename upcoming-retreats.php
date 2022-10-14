@@ -18,16 +18,20 @@ include( plugin_dir_path( __FILE__ ) . 'inc/functions.php');
 
 function enqueue(){
     wp_enqueue_style( 'rhup-style', plugin_dir_url( __FILE__ ) . 'assets/css/style.css'); 
+    //wp_enqueue_script( 'jQuery', 'https://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.3/jquery.min.js'); 
     wp_enqueue_style( 'owlcarmin-style', plugin_dir_url( __FILE__ ) . 'assets/css/owl.carousel.min.css'); 
+    wp_enqueue_style( 'magnific-popup-css', plugin_dir_url( __FILE__ ) . 'assets/css/magnific-popup.min.css'); 
     wp_enqueue_style( 'ownlcardefault-style', plugin_dir_url( __FILE__ ) . 'assets/css/owl.theme.default.min.css'); 
-    wp_enqueue_style( 'font-awesome', 'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css');
+    wp_enqueue_style( 'font-awesome', 'assets/css/font-awesome.min.css');
     wp_register_script( 'rhup_common', plugin_dir_url( __FILE__ ) . 'assets/js/scripts.js', array('jquery'), null, true);
+    wp_register_script( 'magnific-popup-js', plugin_dir_url( __FILE__ ) . 'assets/js/magnific-popup.min.js', array('jquery'), null, true);
     wp_register_script( 'owlc_common', plugin_dir_url( __FILE__ ) . 'assets/js/owl.carousel.js', array('jquery'), null, true);
 
     wp_localize_script( 'rhup_common', 'ajax', array(
     'ajaxurl' 		=> admin_url( 'admin-ajax.php' ),
     ) );
     wp_enqueue_script( 'rhup_common' );
+    wp_enqueue_script( 'magnific-popup-js' );
     wp_enqueue_script( 'owlc_common' );
 
 }
@@ -46,7 +50,19 @@ function rh_upcoming_retreacts_list(){
         'posts_per_page' => 3,
         'post_status'    => array( 'publish' ),
         'paged' => $page,
-        'order' => ' '
+        'order' => 'DESC',
+        'meta_query' =>array(
+            array(
+              "key" => "rhup-date-cst-range",
+              "value" => strtotime("now"),
+              "compare" => ">="
+            ),
+            array(
+              "key" => "rhup-date-cst-range",
+              "value" => '',
+              "compare" => "!="
+            )
+        )
     );
     
 
@@ -72,7 +88,12 @@ function rh_upcoming_retreacts_list(){
         $img = get_option('up_add_key');
         $getImage = "";
         for ($x = 1; $x <=$img; $x++) {
-          $getImage .= '<div class="up_item">'.wp_get_attachment_image(get_post_meta( $post_id, $x , true),'thumbnail').'</div>';
+          $up_item_image = wp_get_attachment_image(get_post_meta( $post_id, $x , true),array("500"));
+          $attachment_id = get_post_meta($post_id, $x , true);
+          $attachment_element = wp_get_attachment_url( $attachment_id, 'medium' );
+          if( $up_item_image !=''){  
+            $getImage .= '<div class="up_item"><a href="'.$attachment_element.'">'. $up_item_image.'</a></div>';
+          }
         }
         $pack_text = 'This package includes:';
         $from_price = 'From';
@@ -80,7 +101,7 @@ function rh_upcoming_retreacts_list(){
         if($rating !== ''){
             $getStar = "";
             for ($i=1; $i<=5; $i++) {
-                $getStar .= '<span class="fa fa-star'.($i <= (int)$rating ? '' : ' upnostar').'"></span>';
+                $getStar .= '<i class="fa fa-star'.($i <= (int)$rating ? '' : ' upnostar').'"></i>';
             }
           }
         if($content != ''){
@@ -89,24 +110,28 @@ function rh_upcoming_retreacts_list(){
             
             $html .= 
             '<div class="rhup_post">
-                <div id="owl-demo" class="owl-carousel owl-theme up_imgae">
+                <div class="tpcrslblg"><div id="owl-demo" class="owl-carousel owl-theme up_imgae">
                     '.$getImage.'
-                </div>
+                </div></div>
                 <div class="rhup_desc">
                     <div class="rhup_tdr">
-                        <p class="up-tags">'.$up_tags.'</hp>
-                        <p class="up-date">'.$up_date.'</p>
-                        <p class="up-star">'.$getStar.' <span class="countStar"> ('.$rating.')</span></p>
+						<div class="dt-tag">
+							<div class="up-tags">'.$up_tags.'</div>
+							<div class="up-date">'.$up_date.'</div>
+						</div>
+						<div class="up-star">'.$getStar.' <span class="countStar"> ('.$rating.')</span></div>
                     </div>
-                </div>
-                <div class="rhup_tdp">
-                    <h2>'.$post_title.'</h2>
-                    <p>'.$trimmed_content.'</p>
-                    <p>'.$pack_text.'</p>
-                    <span>'.$up_package.'</span>
-                </div>
-                <div class="rhup_price">
-                    <p>'.$from_price.' <b>'.$up_price.'</b>'.$pp_price.' ('.$up_bonus_value.')</p>
+                    <div class="rhup_tdp">
+                        <h2>'.$post_title.'</h2>
+                        <p>'.$trimmed_content.'</p>
+                        <div class="pkginc">
+						   <h4>'.$pack_text.'</h4>
+                           <div class="flt">'.$up_package.'</div>
+					    </div>
+                    </div>
+                    <div class="rhup_price">
+                        <span class="pric">'.$from_price.' <strong>'.$up_price.'</strong>'.$pp_price.' ('.$up_bonus_value.')</span>
+                    </div>
                 </div>
             </div>';
         endwhile;
@@ -137,6 +162,6 @@ function wp_rh_on_activation() {
 register_deactivation_hook( __FILE__, 'wp_rh_on_deactivation' );
 function wp_rh_on_deactivation() {
     
-} 
+}
 
 ?>
