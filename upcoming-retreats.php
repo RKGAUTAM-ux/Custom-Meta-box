@@ -1,7 +1,7 @@
 <?php
 /**
  * Plugin Name:  Upcoming Retreats
- * Author:       LGT
+ * Author:       RK
  * Version: 	  0.0.1
  * Description:  Upcoming Retreats 
  * Text Domain:  ur_post_grid
